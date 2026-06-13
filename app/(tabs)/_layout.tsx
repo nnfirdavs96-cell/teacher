@@ -42,9 +42,9 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="diagnostics"
         options={{
-          title: 'Диагностика',
+          title: 'Помощь',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="medkit" color={color} size={size} />
+            <Ionicons name="help-buoy" color={color} size={size} />
           ),
         }}
       />
