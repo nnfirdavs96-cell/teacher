@@ -1,0 +1,33 @@
+{
+  "expo": {
+    "name": "Мастер ТВ/Сети",
+    "slug": "master-tv-net",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "masterтвnet",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#0b1220"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.master.tvnet"
+    },
+    "android": {
+      "package": "com.master.tvnet",
+      "adaptiveIcon": {
+        "backgroundColor": "#0b1220"
+      }
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static"
+    },
+    "plugins": ["expo-router", "expo-secure-store"],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
