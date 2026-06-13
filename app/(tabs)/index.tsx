@@ -1,22 +1,36 @@
 import { useState, useMemo } from 'react';
-import { ScrollView, View, TextInput, StyleSheet, Pressable } from 'react-native';
+import { ScrollView, View, TextInput, StyleSheet, Pressable, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { knowledgeBase, searchArticles } from '@/data/knowledge';
+import { categoriesForRole, searchArticles } from '@/data/knowledge';
+import { useRole, ROLE_LABEL } from '@/lib/role';
 import { Card, H1, H3, Small, Body } from '@/components/ui';
 import { colors, spacing, radius, font } from '@/constants/theme';
 
 export default function ReferenceScreen() {
   const router = useRouter();
+  const { role, setRole } = useRole();
   const [query, setQuery] = useState('');
-  const results = useMemo(() => searchArticles(query), [query]);
+  const cats = useMemo(() => (role ? categoriesForRole(role) : []), [role]);
+  const results = useMemo(() => searchArticles(query, role ?? undefined), [query, role]);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={['top']}>
       <ScrollView contentContainerStyle={{ padding: spacing.lg }}>
-        <H1>Справочник мастера</H1>
-        <Body dim>ТВ · спутник · АНТ · эфир · оптика · сети · Wi-Fi</Body>
+        <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+          <H1>Справочник</H1>
+          <Pressable onPress={() => setRole(null)} style={styles.roleChip}>
+            <Ionicons name="person-circle" size={16} color={colors.accent} />
+            <Text style={styles.roleChipText}>{role ? ROLE_LABEL[role] : 'Профиль'}</Text>
+            <Ionicons name="swap-horizontal" size={14} color={colors.textFaint} />
+          </Pressable>
+        </View>
+        <Body dim>
+          {role === 'net'
+            ? 'Сети · IP/подсети · роутеры · VLAN · Wi-Fi · оптика · видеонаблюдение'
+            : 'ТВ · спутник · АНТ · эфир · кабель · уровни сигнала'}
+        </Body>
 
         <View style={styles.searchRow}>
           <Ionicons name="search" size={18} color={colors.textFaint} />
@@ -50,7 +64,7 @@ export default function ReferenceScreen() {
             ))}
           </View>
         ) : (
-          knowledgeBase.map((cat) => (
+          cats.map((cat) => (
             <View key={cat.id} style={{ marginTop: spacing.md }}>
               <View style={styles.catHeader}>
                 <Ionicons name={cat.icon as any} size={20} color={cat.color} />
@@ -90,6 +104,19 @@ const styles = StyleSheet.create({
   },
   search: { flex: 1, color: colors.text, fontSize: font.body, paddingVertical: spacing.md },
   catHeader: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.sm },
+  roleChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: colors.accentDim,
+    borderWidth: 1,
+    borderColor: colors.accent,
+    borderRadius: radius.pill,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 4,
+    marginTop: 4,
+  },
+  roleChipText: { color: colors.accent, fontSize: font.tiny, fontWeight: '700' },
   resultRow: { flexDirection: 'row', alignItems: 'center' },
   dot: { width: 8, height: 8, borderRadius: 4, marginRight: spacing.md },
 });

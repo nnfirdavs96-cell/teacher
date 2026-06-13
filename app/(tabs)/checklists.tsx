@@ -2,13 +2,16 @@ import { useState } from 'react';
 import { ScrollView, View, Pressable, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { checklists, Checklist } from '@/data/checklists';
+import { checklists, checklistsForRole, Checklist } from '@/data/checklists';
+import { useRole } from '@/lib/role';
 import { Card, H1, H3, Small, Body, Pill } from '@/components/ui';
 import { colors, spacing, font } from '@/constants/theme';
 
 export default function ChecklistsScreen() {
+  const { role } = useRole();
   const [active, setActive] = useState<string | null>(null);
   const current = checklists.find((c) => c.id === active);
+  const list = role ? checklistsForRole(role) : [];
 
   if (current) {
     return <ChecklistDetail list={current} onBack={() => setActive(null)} />;
@@ -19,7 +22,7 @@ export default function ChecklistsScreen() {
       <ScrollView contentContainerStyle={{ padding: spacing.lg }}>
         <H1>Чеклисты монтажа</H1>
         <Body dim>Пошаговые алгоритмы. Открой и отмечай выполненное.</Body>
-        {checklists.map((c) => (
+        {list.map((c) => (
           <Card key={c.id} onPress={() => setActive(c.id)}>
             <Pill text={c.domain} color={colors.good} />
             <View style={{ height: spacing.xs }} />

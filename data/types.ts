@@ -22,10 +22,15 @@ export interface KbArticle {
   sections: KbSection[];
 }
 
+/** Профиль пользователя: ТВ-мастер или сети/сисадмин. */
+export type Role = 'tv' | 'net';
+
 export interface KbCategory {
   id: string;
   title: string;
   icon: string; // Ionicons name
   color: string;
+  /** Для каких ролей показывать категорию. */
+  roles: Role[];
   articles: KbArticle[];
 }

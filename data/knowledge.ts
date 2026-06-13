@@ -1,4 +1,5 @@
-import { KbCategory } from './types';
+import { KbCategory, Role } from './types';
+import { knowledgeNet } from './knowledgeNet';
 
 /**
  * Офлайн-база знаний для мастеров по установке и ремонту ТВ и сетей.
@@ -13,6 +14,7 @@ export const knowledgeBase: KbCategory[] = [
     title: 'Сигнал и измерения',
     icon: 'pulse',
     color: '#38bdf8',
+    roles: ['tv'],
     articles: [
       {
         id: 'signal-units',
@@ -125,6 +127,7 @@ export const knowledgeBase: KbCategory[] = [
     title: 'Спутниковое ТВ (DVB-S/S2)',
     icon: 'planet',
     color: '#a78bfa',
+    roles: ['tv'],
     articles: [
       {
         id: 'sat-howitworks',
@@ -224,6 +227,7 @@ export const knowledgeBase: KbCategory[] = [
     title: 'АНТ / MMDS (наземный Ku)',
     icon: 'radio',
     color: '#f472b6',
+    roles: ['tv'],
     articles: [
       {
         id: 'ant-system',
@@ -355,6 +359,7 @@ export const knowledgeBase: KbCategory[] = [
     title: 'Эфирное ТВ (DVB-T2)',
     icon: 'tv',
     color: '#34d399',
+    roles: ['tv'],
     articles: [
       {
         id: 't2-basics',
@@ -401,6 +406,7 @@ export const knowledgeBase: KbCategory[] = [
     title: 'Кабельное ТВ (DVB-C)',
     icon: 'git-network',
     color: '#fbbf24',
+    roles: ['tv'],
     articles: [
       {
         id: 'c-basics',
@@ -442,6 +448,7 @@ export const knowledgeBase: KbCategory[] = [
     title: 'Оптика / GPON',
     icon: 'flash',
     color: '#f59e0b',
+    roles: ['net'],
     articles: [
       {
         id: 'fiber-gpon',
@@ -497,6 +504,7 @@ export const knowledgeBase: KbCategory[] = [
     title: 'Wi-Fi',
     icon: 'wifi',
     color: '#60a5fa',
+    roles: ['net'],
     articles: [
       {
         id: 'wifi-bands',
@@ -543,6 +551,7 @@ export const knowledgeBase: KbCategory[] = [
     title: 'Сети / СКС / Ethernet',
     icon: 'hardware-chip',
     color: '#22d3ee',
+    roles: ['net'],
     articles: [
       {
         id: 'net-cabling',
@@ -595,6 +604,7 @@ export const knowledgeBase: KbCategory[] = [
     title: 'Коакс. кабель и разъёмы',
     icon: 'options',
     color: '#fb923c',
+    roles: ['tv'],
     articles: [
       {
         id: 'cable-rg6',
@@ -640,7 +650,14 @@ export const knowledgeBase: KbCategory[] = [
       },
     ],
   },
+
+  // Категории профиля «Сети / Сисадмин»
+  ...knowledgeNet,
 ];
+
+export function categoriesForRole(role: Role): KbCategory[] {
+  return knowledgeBase.filter((c) => c.roles.includes(role));
+}
 
 export function findArticle(id: string) {
   for (const cat of knowledgeBase) {
@@ -650,11 +667,12 @@ export function findArticle(id: string) {
   return null;
 }
 
-export function searchArticles(query: string) {
+export function searchArticles(query: string, role?: Role) {
   const q = query.trim().toLowerCase();
   if (!q) return [];
   const out: { category: KbCategory; article: KbCategory['articles'][number] }[] = [];
-  for (const cat of knowledgeBase) {
+  const cats = role ? knowledgeBase.filter((c) => c.roles.includes(role)) : knowledgeBase;
+  for (const cat of cats) {
     for (const a of cat.articles) {
       const hay = (a.title + ' ' + a.summary + ' ' + a.tags.join(' ')).toLowerCase();
       if (hay.includes(q)) out.push({ category: cat, article: a });
