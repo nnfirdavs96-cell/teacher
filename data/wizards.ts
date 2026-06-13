@@ -1,3 +1,5 @@
+import { Role } from './types';
+
 /**
  * Интерактивный мастер-решатель: дерево вопросов простыми словами.
  * Рассчитан на обычного человека без подготовки — жмёшь кнопки и получаешь
@@ -35,6 +37,7 @@ export interface Wizard {
   subtitle: string;
   icon: string;
   color: string;
+  roles: Role[];
   start: string;
   nodes: Record<string, WizardNode>;
 }
@@ -47,6 +50,7 @@ export const wizards: Wizard[] = [
     subtitle: 'Чёрный экран, «нет сигнала», не показывает',
     icon: 'tv-outline',
     color: '#ef4444',
+    roles: ['tv'],
     start: 'start',
     nodes: {
       start: {
@@ -235,6 +239,7 @@ export const wizards: Wizard[] = [
     subtitle: 'Тормозит, зависает, заикается звук',
     icon: 'apps-outline',
     color: '#f59e0b',
+    roles: ['tv'],
     start: 'start',
     nodes: {
       start: {
@@ -294,6 +299,7 @@ export const wizards: Wizard[] = [
     subtitle: 'Нет сети, не грузит сайты',
     icon: 'globe-outline',
     color: '#3b82f6',
+    roles: ['net'],
     start: 'start',
     nodes: {
       start: {
@@ -372,6 +378,7 @@ export const wizards: Wizard[] = [
     subtitle: 'Медленно, обрывается, плохо в комнатах',
     icon: 'wifi-outline',
     color: '#60a5fa',
+    roles: ['net'],
     start: 'start',
     nodes: {
       start: {
@@ -432,6 +439,7 @@ export const wizards: Wizard[] = [
     subtitle: 'Пошагово, простыми словами',
     icon: 'navigate-outline',
     color: '#a78bfa',
+    roles: ['tv'],
     start: 'start',
     nodes: {
       start: {
@@ -498,6 +506,10 @@ export const wizards: Wizard[] = [
     },
   },
 ];
+
+export function wizardsForRole(role: Role): Wizard[] {
+  return wizards.filter((w) => w.roles.includes(role));
+}
 
 export function getWizard(id: string) {
   return wizards.find((w) => w.id === id) ?? null;

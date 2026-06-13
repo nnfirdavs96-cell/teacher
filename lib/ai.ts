@@ -57,8 +57,15 @@ const SYSTEM_PROMPT = `Ты — помощник в приложении для 
 export async function askAssistant(
   apiKey: string,
   model: string,
-  history: ChatMessage[]
+  history: ChatMessage[],
+  role?: 'tv' | 'net'
 ): Promise<string> {
+  const roleLine =
+    role === 'net'
+      ? '\n\nПрофиль пользователя: СЕТИ/СИСАДМИН — приоритет темам интернета, роутеров, IP/подсетей, Wi-Fi, оптики, видеонаблюдения, СКС.'
+      : role === 'tv'
+      ? '\n\nПрофиль пользователя: ТВ-МАСТЕР — приоритет темам спутник/АНТ/эфир/кабель, наводка антенн, уровни сигнала.'
+      : '';
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
@@ -71,7 +78,7 @@ export async function askAssistant(
     body: JSON.stringify({
       model,
       max_tokens: 1024,
-      system: SYSTEM_PROMPT,
+      system: SYSTEM_PROMPT + roleLine,
       messages: history.map((m) => ({ role: m.role, content: m.content })),
     }),
   });

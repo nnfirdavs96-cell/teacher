@@ -51,9 +51,9 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="reference"
         options={{
-          title: 'Частоты',
+          title: 'Таблицы',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="planet" color={color} size={size} />
+            <Ionicons name="grid" color={color} size={size} />
           ),
         }}
       />

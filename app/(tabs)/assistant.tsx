@@ -22,6 +22,7 @@ import {
   AVAILABLE_MODELS,
   ChatMessage,
 } from '@/lib/ai';
+import { useRole } from '@/lib/role';
 
 const SUGGESTIONS = [
   'Телевизор пишет «нет сигнала», что делать?',
@@ -41,6 +42,7 @@ export default function AssistantScreen() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const scrollRef = useRef<ScrollView>(null);
+  const { role } = useRole();
 
   useEffect(() => {
     loadApiKey().then((k) => {
@@ -77,7 +79,7 @@ export default function AssistantScreen() {
     setLoading(true);
     setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100);
     try {
-      const reply = await askAssistant(apiKey, model, next);
+      const reply = await askAssistant(apiKey, model, next, role ?? undefined);
       setMessages([...next, { role: 'assistant', content: reply }]);
     } catch (e: any) {
       setError(e.message ?? 'Ошибка запроса');

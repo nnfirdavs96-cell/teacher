@@ -172,3 +172,79 @@ export function transponderToIf(freqMHz: number): { lo: number; if: number } {
   const lo = freqMHz < 11700 ? 9750 : 10600;
   return { lo, if: freqMHz - lo };
 }
+
+// ───────────────────────── Подсеть (IPv4 / CIDR) ─────────────────────────
+
+export interface SubnetResult {
+  valid: boolean;
+  mask: string;
+  network: string;
+  broadcast: string;
+  firstHost: string;
+  lastHost: string;
+  hosts: number;
+}
+
+function intToIp(n: number): string {
+  return [(n >>> 24) & 255, (n >>> 16) & 255, (n >>> 8) & 255, n & 255].join('.');
+}
+
+/** Расчёт параметров подсети по IP и префиксу CIDR (0–32). */
+export function subnetInfo(ip: string, cidr: number): SubnetResult {
+  const empty: SubnetResult = {
+    valid: false,
+    mask: '',
+    network: '',
+    broadcast: '',
+    firstHost: '',
+    lastHost: '',
+    hosts: 0,
+  };
+  const parts = ip.trim().split('.');
+  if (parts.length !== 4) return empty;
+  const nums = parts.map((p) => Number(p));
+  if (nums.some((n) => !Number.isInteger(n) || n < 0 || n > 255)) return empty;
+  if (!Number.isInteger(cidr) || cidr < 0 || cidr > 32) return empty;
+
+  const ipInt = ((nums[0] << 24) | (nums[1] << 16) | (nums[2] << 8) | nums[3]) >>> 0;
+  const maskInt = cidr === 0 ? 0 : (0xffffffff << (32 - cidr)) >>> 0;
+  const network = (ipInt & maskInt) >>> 0;
+  const broadcast = (network | (~maskInt >>> 0)) >>> 0;
+
+  let hosts = 0;
+  let firstHost = intToIp(network);
+  let lastHost = intToIp(broadcast);
+  if (cidr <= 30) {
+    hosts = Math.pow(2, 32 - cidr) - 2;
+    firstHost = intToIp(network + 1);
+    lastHost = intToIp(broadcast - 1);
+  } else if (cidr === 31) {
+    hosts = 2; // точка-точка (RFC 3021)
+    firstHost = intToIp(network);
+    lastHost = intToIp(broadcast);
+  } else {
+    hosts = 1; // /32 — один адрес
+  }
+
+  return {
+    valid: true,
+    mask: intToIp(maskInt),
+    network: intToIp(network),
+    broadcast: intToIp(broadcast),
+    firstHost,
+    lastHost,
+    hosts,
+  };
+}
+
+// ───────────────────────── Объём архива видеонаблюдения ─────────────────────────
+
+/** Объём записи, ГБ. 1 Мбит/с за час = 0.45 ГБ. */
+export function cctvStorageGB(
+  bitrateMbps: number,
+  cameras: number,
+  hoursPerDay: number,
+  days: number
+): number {
+  return bitrateMbps * 0.45 * hoursPerDay * days * cameras;
+}

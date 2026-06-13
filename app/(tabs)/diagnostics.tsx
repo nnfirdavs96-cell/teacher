@@ -3,7 +3,8 @@ import { ScrollView, View, Pressable, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { wizards, getWizard, Wizard, WizardNode, WizardLink } from '@/data/wizards';
+import { wizardsForRole, getWizard, Wizard, WizardNode, WizardLink } from '@/data/wizards';
+import { useRole } from '@/lib/role';
 import { Card, H1, H3, Small, Body } from '@/components/ui';
 import { colors, spacing, radius, font } from '@/constants/theme';
 
@@ -11,6 +12,8 @@ export default function SolverScreen() {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [stack, setStack] = useState<string[]>([]);
   const router = useRouter();
+  const { role } = useRole();
+  const list = role ? wizardsForRole(role) : [];
 
   const wiz = activeId ? getWizard(activeId) : null;
 
@@ -50,7 +53,7 @@ export default function SolverScreen() {
         <ScrollView contentContainerStyle={{ padding: spacing.lg }}>
           <H1>Помощь: что случилось?</H1>
           <Body dim>Выберите проблему — проведём по шагам простыми словами и подскажем решение.</Body>
-          {wizards.map((w) => (
+          {list.map((w) => (
             <Card key={w.id} onPress={() => open(w)}>
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                 <View style={[bigIcon, { backgroundColor: w.color + '22' }]}>
