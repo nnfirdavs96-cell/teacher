@@ -4,6 +4,7 @@ import { View, ActivityIndicator } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { colors } from '@/constants/theme';
 import { RoleProvider, useRole } from '@/lib/role';
+import { ProgressProvider } from '@/lib/progress';
 import { Welcome } from '@/components/Welcome';
 
 function Gate() {
@@ -40,7 +41,9 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <StatusBar style="light" />
       <RoleProvider>
-        <Gate />
+        <ProgressProvider>
+          <Gate />
+        </ProgressProvider>
       </RoleProvider>
     </SafeAreaProvider>
   );
