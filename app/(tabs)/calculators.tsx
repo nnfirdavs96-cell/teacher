@@ -14,12 +14,18 @@ import {
   transponderToIf,
   subnetInfo,
   cctvStorageGB,
+  transferSeconds,
+  formatDuration,
+  raidCapacity,
+  poeBudget,
   CableType,
+  RaidLevel,
 } from '@/lib/calc';
 
 const CABLE_TYPES: CableType[] = ['RG-6', 'RG-59', 'RG-11', 'RG-58'];
+const RAID_LEVELS: RaidLevel[] = ['0', '1', '5', '6', '10'];
 const TV_CALCS = ['Кабель', 'Бюджет', 'Единицы', 'Спутник', 'LNB'];
-const NET_CALCS = ['Подсеть', 'CCTV диск', 'Единицы'];
+const NET_CALCS = ['Подсеть', 'Скорость', 'RAID', 'PoE', 'CCTV диск'];
 
 function num(s: string, def = 0): number {
   const v = parseFloat(s.replace(',', '.'));
@@ -53,6 +59,9 @@ export default function CalculatorsScreen() {
         {active === 'Спутник' && <SatCalc />}
         {active === 'LNB' && <LnbCalc />}
         {active === 'Подсеть' && <SubnetCalc />}
+        {active === 'Скорость' && <TransferCalc />}
+        {active === 'RAID' && <RaidCalc />}
+        {active === 'PoE' && <PoeCalc />}
         {active === 'CCTV диск' && <CctvCalc />}
 
         <View style={{ height: spacing.xxl }} />
@@ -209,6 +218,73 @@ function SubnetCalc() {
         <Text style={{ color: colors.bad, fontWeight: '700' }}>Проверьте IP и префикс.</Text>
       )}
       <NoteBox>Хосты = 2^(32−CIDR) − 2 (минус адрес сети и broadcast). /31 — точка-точка, /32 — один адрес.</NoteBox>
+    </Card>
+  );
+}
+
+function TransferCalc() {
+  const [size, setSize] = useState('10');
+  const [speed, setSpeed] = useState('100');
+  const sec = transferSeconds(num(size, 10), num(speed, 100));
+  return (
+    <Card>
+      <H3>Время передачи файла</H3>
+      <Field label="Размер, ГБ" value={size} onChange={setSize} suffix="ГБ" />
+      <Field label="Скорость канала, Мбит/с" value={speed} onChange={setSpeed} suffix="Мбит/с" />
+      <View style={{ height: spacing.sm }} />
+      <ResultLine label="Примерное время" value={formatDuration(sec)} color={colors.accent} />
+      <NoteBox>1 ГБ ≈ 8000 Мбит. Реальная скорость обычно ниже паспортной (накладные расходы, диск).</NoteBox>
+    </Card>
+  );
+}
+
+function RaidCalc() {
+  const [level, setLevel] = useState<RaidLevel>('5');
+  const [disks, setDisks] = useState('4');
+  const [size, setSize] = useState('4');
+  const r = raidCapacity(level, Math.round(num(disks, 4)), num(size, 4));
+  return (
+    <Card>
+      <H3>RAID: ёмкость и отказоустойчивость</H3>
+      <Small>Уровень RAID</Small>
+      <View style={{ height: spacing.xs }} />
+      <Segmented options={RAID_LEVELS} value={level} onChange={setLevel} labelOf={(v) => `RAID ${v}`} />
+      <Field label="Количество дисков" value={disks} onChange={setDisks} />
+      <Field label="Размер одного диска, ТБ" value={size} onChange={setSize} suffix="ТБ" />
+      <View style={{ height: spacing.sm }} />
+      {r.valid ? (
+        <>
+          <ResultLine label="Полезная ёмкость" value={`${r.usableTB.toFixed(1)} ТБ`} color={colors.good} />
+          <ResultLine label="Переживёт отказ" value={r.faultTolerance} color={colors.info} />
+          <NoteBox>{r.note} RAID не заменяет бэкап!</NoteBox>
+        </>
+      ) : (
+        <Text style={{ color: colors.bad, fontWeight: '700' }}>{r.note}</Text>
+      )}
+    </Card>
+  );
+}
+
+function PoeCalc() {
+  const [count, setCount] = useState('8');
+  const [watt, setWatt] = useState('12');
+  const [budget, setBudget] = useState('120');
+  const r = poeBudget(Math.round(num(count, 8)), num(watt, 12), num(budget, 120));
+  return (
+    <Card>
+      <H3>Бюджет PoE коммутатора</H3>
+      <Field label="Количество устройств" value={count} onChange={setCount} />
+      <Field label="Мощность одного, Вт" value={watt} onChange={setWatt} suffix="Вт" />
+      <Field label="PoE-бюджет коммутатора, Вт" value={budget} onChange={setBudget} suffix="Вт" />
+      <View style={{ height: spacing.sm }} />
+      <ResultLine label="Суммарно нужно" value={`${r.total.toFixed(0)} Вт`} color={r.ok ? colors.good : colors.bad} />
+      <ResultLine label="Запас бюджета" value={`${r.headroom.toFixed(0)} Вт`} color={r.headroom >= 0 ? colors.good : colors.bad} />
+      <View style={{ marginTop: spacing.sm }}>
+        <Text style={{ color: r.ok ? colors.good : colors.bad, fontWeight: '700' }}>
+          {r.ok ? 'Бюджета хватает ✓' : 'Не хватает бюджета — нужен мощнее коммутатор'}
+        </Text>
+      </View>
+      <NoteBox>PoE ~15 Вт (af), PoE+ ~30 Вт (at), PoE++ до 60–90 Вт (bt). Закладывай запас 10–20%.</NoteBox>
     </Card>
   );
 }

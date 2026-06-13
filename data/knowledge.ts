@@ -1,5 +1,7 @@
 import { KbCategory, Role } from './types';
 import { knowledgeNet } from './knowledgeNet';
+import { playbooks } from './playbooks';
+import { guides } from './guides';
 
 /**
  * Офлайн-база знаний для мастеров по установке и ремонту ТВ и сетей.
@@ -653,6 +655,10 @@ export const knowledgeBase: KbCategory[] = [
 
   // Категории профиля «Сети / Сисадмин»
   ...knowledgeNet,
+  // Практические разборы «ситуация → решение»
+  ...playbooks,
+  // Пошаговые гайды настройки с нуля
+  ...guides,
 ];
 
 export function categoriesForRole(role: Role): KbCategory[] {
