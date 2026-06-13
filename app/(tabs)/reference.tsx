@@ -7,7 +7,7 @@ import { Card, H1, H3, Small, Segmented, DataTable, Pill, NoteBox } from '@/comp
 import { colors, spacing, font } from '@/constants/theme';
 
 const TV_TABS = ['Спутники', 'Диапазоны', 'DVB-T2', 'Wi-Fi'];
-const NET_TABS = ['Wi-Fi', 'Порты', 'CIDR'];
+const NET_TABS = ['Порты', 'CIDR', 'DNS', 'RAID', 'Linux', 'Wi-Fi'];
 
 export default function ReferenceFreqScreen() {
   const { role } = useRole();
@@ -27,6 +27,9 @@ export default function ReferenceFreqScreen() {
         {active === 'Wi-Fi' && <Wifi />}
         {active === 'Порты' && <Ports />}
         {active === 'CIDR' && <Cidr />}
+        {active === 'DNS' && <Dns />}
+        {active === 'RAID' && <Raid />}
+        {active === 'Linux' && <LinuxCmd />}
 
         <View style={{ height: spacing.xxl }} />
       </ScrollView>
@@ -153,6 +156,74 @@ function Cidr() {
         ]}
       />
       <NoteBox>Точный расчёт сети/broadcast/хостов — в калькуляторе «Подсеть».</NoteBox>
+    </Card>
+  );
+}
+
+function Dns() {
+  return (
+    <Card>
+      <H3>DNS: типы записей</H3>
+      <View style={{ height: spacing.sm }} />
+      <DataTable
+        headers={['Тип', 'Назначение']}
+        rows={[
+          ['A', 'Имя → IPv4'],
+          ['AAAA', 'Имя → IPv6'],
+          ['CNAME', 'Псевдоним (имя → имя)'],
+          ['MX', 'Почтовый сервер'],
+          ['TXT', 'SPF/DKIM/проверки'],
+          ['NS', 'DNS-серверы домена'],
+          ['PTR', 'IP → имя (обратная)'],
+          ['SRV', 'Сервис: порт+хост'],
+          ['CAA', 'Кто выдаёт сертификаты'],
+        ]}
+      />
+      <NoteBox>Публичные DNS: 1.1.1.1 (Cloudflare), 8.8.8.8 (Google). Проверка: dig / nslookup.</NoteBox>
+    </Card>
+  );
+}
+
+function Raid() {
+  return (
+    <Card>
+      <H3>Уровни RAID</H3>
+      <View style={{ height: spacing.sm }} />
+      <DataTable
+        headers={['RAID', 'Ёмкость', 'Отказ', 'Мин.']}
+        rows={[
+          ['0', '100%', 'нет', '2'],
+          ['1', '50%', '1 диск', '2'],
+          ['5', 'N−1', '1 диск', '3'],
+          ['6', 'N−2', '2 диска', '4'],
+          ['10', '50%', '1/зеркало', '4'],
+        ]}
+      />
+      <NoteBox>RAID защищает от отказа диска, но не заменяет бэкап. Расчёт — в калькуляторе «RAID».</NoteBox>
+    </Card>
+  );
+}
+
+function LinuxCmd() {
+  return (
+    <Card>
+      <H3>Linux: шпаргалка</H3>
+      <View style={{ height: spacing.sm }} />
+      <DataTable
+        headers={['Команда', 'Что']}
+        rows={[
+          ['df -h / du -sh *', 'Место / размер'],
+          ['top / htop', 'Процессы'],
+          ['ss -tulpn', 'Открытые порты'],
+          ['ip a / ip r', 'Адреса / маршруты'],
+          ['systemctl status x', 'Статус службы'],
+          ['journalctl -u x -e', 'Логи службы'],
+          ['chmod 755 / chown', 'Права / владелец'],
+          ['grep / find', 'Поиск'],
+          ['ssh-keygen -t ed25519', 'Создать SSH-ключ'],
+        ]}
+      />
+      <NoteBox>Больше команд и разборов — в разделах «Linux» и «Ситуации» Справочника.</NoteBox>
     </Card>
   );
 }

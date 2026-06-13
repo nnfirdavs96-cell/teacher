@@ -248,3 +248,79 @@ export function cctvStorageGB(
 ): number {
   return bitrateMbps * 0.45 * hoursPerDay * days * cameras;
 }
+
+// ───────────────────────── Время передачи файла ─────────────────────────
+
+/** Время скачивания/передачи. 1 ГБ = 8000 Мбит (десятичные). */
+export function transferSeconds(sizeGB: number, speedMbps: number): number {
+  if (speedMbps <= 0) return 0;
+  return (sizeGB * 8000) / speedMbps;
+}
+
+export function formatDuration(seconds: number): string {
+  if (!isFinite(seconds) || seconds <= 0) return '—';
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = Math.round(seconds % 60);
+  const parts: string[] = [];
+  if (h) parts.push(`${h} ч`);
+  if (m) parts.push(`${m} мин`);
+  if (s || parts.length === 0) parts.push(`${s} с`);
+  return parts.join(' ');
+}
+
+// ───────────────────────── RAID-калькулятор ─────────────────────────
+
+export type RaidLevel = '0' | '1' | '5' | '6' | '10';
+
+export interface RaidResult {
+  valid: boolean;
+  usableTB: number;
+  faultTolerance: string;
+  note: string;
+}
+
+/** Полезная ёмкость и отказоустойчивость массива. */
+export function raidCapacity(level: RaidLevel, disks: number, sizeTB: number): RaidResult {
+  const bad = (note: string): RaidResult => ({
+    valid: false,
+    usableTB: 0,
+    faultTolerance: '—',
+    note,
+  });
+  if (disks < 1 || sizeTB <= 0) return bad('Укажите число дисков и размер.');
+
+  switch (level) {
+    case '0':
+      if (disks < 2) return bad('RAID 0 — минимум 2 диска.');
+      return { valid: true, usableTB: disks * sizeTB, faultTolerance: 'нет (любой сбой = потеря)', note: 'Максимум ёмкости и скорости, без защиты.' };
+    case '1':
+      if (disks < 2) return bad('RAID 1 — минимум 2 диска.');
+      return { valid: true, usableTB: sizeTB, faultTolerance: `до ${disks - 1} диск(ов)`, note: 'Зеркало: ёмкость одного диска.' };
+    case '5':
+      if (disks < 3) return bad('RAID 5 — минимум 3 диска.');
+      return { valid: true, usableTB: (disks - 1) * sizeTB, faultTolerance: '1 диск', note: 'Ёмкость N−1. Риск при ребилде больших дисков.' };
+    case '6':
+      if (disks < 4) return bad('RAID 6 — минимум 4 диска.');
+      return { valid: true, usableTB: (disks - 2) * sizeTB, faultTolerance: '2 диска', note: 'Ёмкость N−2. Надёжнее для больших массивов.' };
+    case '10':
+      if (disks < 4 || disks % 2 !== 0) return bad('RAID 10 — чётное число дисков, минимум 4.');
+      return { valid: true, usableTB: (disks / 2) * sizeTB, faultTolerance: 'по 1 диску в каждом зеркале', note: 'Скорость + защита, ёмкость 50%.' };
+    default:
+      return bad('Неизвестный уровень.');
+  }
+}
+
+// ───────────────────────── Бюджет PoE ─────────────────────────
+
+export interface PoeResult {
+  total: number;
+  ok: boolean;
+  headroom: number;
+}
+
+/** Суммарная мощность PoE и хватит ли бюджета коммутатора. */
+export function poeBudget(deviceCount: number, wattsEach: number, switchBudgetW: number): PoeResult {
+  const total = deviceCount * wattsEach;
+  return { total, ok: total <= switchBudgetW, headroom: switchBudgetW - total };
+}
