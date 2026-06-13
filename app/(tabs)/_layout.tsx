@@ -31,9 +31,18 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
+        name="learn"
+        options={{
+          title: 'Обучение',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="school" color={color} size={size} />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="calculators"
         options={{
-          title: 'Калькуляторы',
+          title: 'Расчёты',
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="calculator" color={color} size={size} />
           ),
